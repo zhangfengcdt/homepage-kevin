@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kevin: Code & Ice - The Ultimate Gig!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* GitHub Dark Mode background */
+            color: #c9d1d9; /* Light gray text */
+        }
+        .hero-section {
+            background: linear-gradient(to right bottom, #1a202c, #2d3748); /* Dark, sleek gradient */
+            color: white;
+            padding: 8rem 0;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%); /* More dramatic slanted bottom */
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2394a3b8" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 0l-6 6-6-6 6-6 6 6zM2 10.5L.5 12 2 13.5 3.5 12 2 10.5zM20 10.5L18.5 12 20 13.5 21.5 12 20 10.5zM20 28.5L18.5 30 20 31.5 21.5 30 20 28.5zM0 20l2-2 2 2-2 2-2-2zm40 0l2-2 2 2-2 2-2-2zM40 28l2-2 2 2-2 2-2-2zM0 40l2-2 2 2-2 2-2-2zm20 4l2-2 2 2-2 2-2-2zM20 48l2-2 2 2-2 2-2-2zM2 48.5L.5 50 2 51.5 3.5 50 2 48.5zM2 58.5L.5 60 2 61.5 3.5 60 2 58.5z" /%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); /* Subtle tech pattern */
+            background-repeat: repeat;
+            opacity: 0.2;
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .section-heading {
+            color: #60a5fa; /* Vibrant blue for headings */
+            border-bottom: 3px solid #38b2ac; /* Teal underline */
+            padding-bottom: 0.5rem;
+            display: inline-block; /* To make border-bottom fit text */
+            margin-bottom: 2rem;
+        }
+        .ai-app-card {
+            background-color: #1f2937; /* Darker card background */
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 1px solid #374151; /* Subtle border */
+        }
+        .ai-app-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .button-primary {
+            background-color: #60a5fa; /* Vibrant blue button */
+            color: #1f2937; /* Dark text for contrast */
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .button-primary:hover {
+            background-color: #3b82f6; /* Darker blue on hover */
+            transform: translateY(-2px);
+        }
+        .button-secondary {
+            background-color: #38b2ac; /* Teal secondary button */
+            color: #1f2937;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .button-secondary:hover {
+            background-color: #319795; /* Darker teal on hover */
+            transform: translateY(-2px);
+        }
+        .navbar-link {
+            position: relative;
+            color: #a0aec0; /* Lighter gray for nav links */
+            font-weight: 600;
+            transition: color 0.2s ease-in-out;
+        }
+        .navbar-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            display: block;
+            margin-top: 5px;
+            right: 0;
+            background: #60a5fa;
+            transition: width 0.3s ease;
+        }
+        .navbar-link:hover::after {
+            width: 100%;
+            left: 0;
+            background: #60a5fa;
+        }
+        .profile-image {
+            box-shadow: 0 0 0 8px rgba(96, 165, 250, 0.5); /* Blue glow effect */
+        }
+        /* Chatbot specific styles */
+        .chat-container {
+            background-color: #1f2937; /* Dark background for chat */
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            height: 600px; /* Fixed height for chat window */
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: #1a202c; /* Slightly darker chat history background */
+            border-radius: 0.75rem;
+            margin: 1rem;
+        }
+        .chat-message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            word-wrap: break-word;
+        }
+        .chat-message.user {
+            align-self: flex-end;
+            background-color: #60a5fa; /* Blue for user messages */
+            color: #1f2937;
+        }
+        .chat-message.ai {
+            align-self: flex-start;
+            background-color: #374151; /* Gray for AI messages */
+            color: #c9d1d9;
+        }
+        .chat-input-area {
+            display: flex;
+            padding: 1.5rem;
+            gap: 1rem;
+            border-top: 1px solid #374151;
+        }
+        .chat-input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #374151;
+            background-color: #2d3748;
+            color: #c9d1d9;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+        }
+        .chat-input:focus {
+            border-color: #60a5fa;
+        }
+        .send-button {
+            background-color: #38b2ac; /* Teal for send button */
+            color: #1f2937;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .send-button:hover {
+            background-color: #319795;
+        }
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #60a5fa;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #60a5fa;
+            border-radius: 50%;
+            animation: bounce 0.8s infinite alternate;
+        }
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-gray-900 shadow-lg py-4 sticky top-0 z-50">
+        <nav class="container mx-auto flex justify-between items-center px-4">
+            <a href="#" class="text-3xl font-extrabold text-blue-400 tracking-wider rounded-lg p-2 hover:bg-gray-800 transition-colors">K.E.V.I.N.</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="navbar-link">Home</a>
+                <a href="#ai-chat" class="navbar-link">Meet Kevin & AI</a>
+                <a href="#hockey" class="navbar-link">Ice Hockey Zone</a>
+                <a href="#ai-apps" class="navbar-link">AI Innovations</a>
+                <a href="#contact" class="navbar-link">Connect</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden p-2 text-blue-400 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-gray-900 bg-opacity-95 z-40 flex flex-col items-center justify-center space-y-8">
+            <button id="close-mobile-menu" class="absolute top-4 right-4 p-2 text-blue-400 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <a href="#home" class="text-4xl text-blue-400 hover:text-blue-200 py-3 block w-full text-center" onclick="closeMobileMenu()">Home</a>
+            <a href="#ai-chat" class="text-4xl text-blue-400 hover:text-blue-200 py-3 block w-full text-center" onclick="closeMobileMenu()">Meet Kevin & AI</a>
+            <a href="#hockey" class="text-4xl text-blue-400 hover:text-blue-200 py-3 block w-full text-center" onclick="closeMobileMenu()">Ice Hockey Zone</a>
+            <a href="#ai-apps" class="text-4xl text-blue-400 hover:text-blue-200 py-3 block w-full text-center" onclick="closeMobileMenu()">AI Innovations</a>
+            <a href="#contact" class="text-4xl text-blue-400 hover:text-blue-200 py-3 block w-full text-center" onclick="closeMobileMenu()">Connect</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section text-center">
+        <div class="hero-content container mx-auto px-4 py-20">
+            <h1 class="text-6xl md:text-8xl font-extrabold mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 animate-pulse">
+                KEVIN: CODE & ICE
+            </h1>
+            <p class="text-xl md:text-3xl mb-10 font-light max-w-4xl mx-auto text-blue-200">
+                Dropping pucks and pushing pixels! I'm a 13-year-old AI developer by day,
+                SCAHA Champion by night. Ready for the next big gig?
+            </p>
+            <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6">
+                <a href="#hockey" class="button-primary inline-flex items-center justify-center">
+                    <i class="fas fa-hockey-puck mr-2"></i> Hit the Ice!
+                </a>
+                <a href="#ai-apps" class="button-secondary inline-flex items-center justify-center">
+                    <i class="fas fa-robot mr-2"></i> Explore My AI Stack
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Combined About & AI Assistant Section -->
+    <section id="ai-chat" class="py-16 md:py-24 bg-gray-900 text-gray-200">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <h2 class="text-5xl font-bold text-center mb-16 section-heading mx-auto">Meet Kevin & His AI Assistant!</h2>
+            <div class="md:flex items-start space-y-12 md:space-y-0 md:space-x-16 mb-16">
+                <div class="md:w-1/3 flex justify-center flex-shrink-0">
+                    <!-- Kevin's Profile Image -->
+                    <img src="images/profile.jpg" alt="Kevin's Profile" class="rounded-full shadow-2xl border-4 border-blue-500 w-64 h-64 md:w-80 md:h-80 object-cover profile-image transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                </div>
+                <div class="md:w-2/3 text-xl leading-relaxed text-gray-300">
+                    <p class="mb-6">
+                        Alright, let's cut to the chase: I'm Kevin, 13 years old, and I thrive on pushing limits—whether it's on the ice or in the terminal. I've been lacing up my skates since I was 4, turning ice into my personal playground.
+                    </p>
+                    <p class="mb-6">
+                        When I'm not hitting slap shots or coding AI, you can probably find me deep in a gaming session. I love building epic worlds in <span class="text-orange-400 font-semibold">Minecraft</span> and battling it out with friends in <span class="text-green-400 font-semibold">Fortnite</span>. It's all about strategy, creativity, and having a blast!
+                    </p>
+                    <p class="mb-6">
+                        But the real magic happens when I power up my IDE. AI isn't just a buzzword; it's my canvas. I'm building apps that are smart, fun, and actually useful for schools, for kids, and yeah, even for getting my hockey team on top of their game.
+                    </p>
+                    <p>
+                        This site is my digital HQ, where I showcase the fusion of my two worlds. Stick around, you might just get inspired!
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-center text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
+                And guess what? My very own AI assistant is here to answer anything you want to know about me, my hockey adventures, or my AI projects. Go ahead, ask away!
+            </p>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Initial message from AI Kevin -->
+                    <div class="chat-message ai">
+                        Hey there! I'm Kevin's AI Assistant. I'm here to tell you all about Kevin. What do you want to know? Ask away!
+                    </div>
+                </div>
+                <div class="loading-indicator" id="loading-indicator">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    Thinking...
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask anything about Kevin...">
+                    <button id="send-button" class="send-button">
+                        <i class="fas fa-paper-plane mr-2"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ice Hockey Section -->
+    <section id="hockey" class="py-16 md:py-24 bg-gray-800 text-gray-200">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <h2 class="text-5xl font-bold text-center mb-16 section-heading mx-auto">Ice Hockey Zone: My Battleground</h2>
+            <div class="md:flex items-center space-y-12 md:space-y-0 md:space-x-16">
+                <div class="md:w-2/3 text-xl leading-relaxed text-gray-300">
+                    <p class="mb-6">
+                        From age 4, the rink became my second home. Ice hockey isn't just a game; it's a high-speed chess match, a test of grit, and the ultimate team sport. Every slap shot, every save, every pass—it's all about precision and power.
+                    </p>
+                    <p class="mb-6 font-semibold text-blue-300">
+                        Proud to announce: I'm a key player on the <span class="text-teal-400">NHL California SCAHA Champion 14U A Team</span>! We didn't just play; we dominated. That championship felt earned, every single second.
+                    </p>
+                    <p>
+                        We're not just a team; we're a unit. The bond, the intensity, the shared goal—that's what fuels me on the ice. Let's go for the next win! <i class="fas fa-fist-raised ml-2 text-teal-400"></i>
+                    </p>
+                </div>
+                <div class="md:w-1/3 flex justify-center">
+                    <!-- Hockey Team Image -->
+                    <img src="images/team-redwings.png" alt="Kevin's Hockey Team" class="rounded-xl shadow-2xl border-4 border-teal-400 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Apps Portfolio Section -->
+    <section id="ai-apps" class="py-16 md:py-24 bg-gray-800 text-gray-200">
+        <div class="container mx-auto px-4">
+            <h2 class="text-5xl font-bold text-center mb-16 section-heading mx-auto">AI Innovations: My Tech Stack</h2>
+            <p class="text-center text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
+                I'm coding the future, one AI app at a time. Here’s a glimpse into my projects, built to empower, educate, and even elevate the game!
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+                <!-- AI App 1 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-brain mr-3"></i>Learn-AI Assistant</h3>
+                        <p class="text-gray-300 mb-5">
+                            This interactive AI demystifies complex AI concepts for elementary students. Think fun stories and engaging quizzes, making learning about AI a blast!
+                        </p>
+                    </div>
+                    <a href="https://example.com/learn-ai-assistant" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-rocket mr-2"></i> Launch App
+                    </a>
+                </div>
+
+                <!-- AI App 2 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-book-reader mr-3"></i>Homework Helper AI</h3>
+                        <p class="text-gray-300 mb-5">
+                            My school project: a smart AI tool that helps students tackle homework with explanations and guided solutions, fostering true understanding.
+                        </p>
+                    </div>
+                    <a href="https://example.com/homework-helper" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-flask mr-2"></i> Launch App
+                    </a>
+                </div>
+
+                <!-- AI App 3 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-chart-line mr-3"></i>Hockey Strategy Visualizer</h3>
+                        <p class="text-gray-300 mb-5">
+                            Built for my team! This AI visualizes game strategies and analyzes player movements, giving us the edge we need on the ice.
+                        </p>
+                    </div>
+                    <a href="https://example.com/hockey-strategy" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-chart-pie mr-2"></i> Launch App
+                    </a>
+                </div>
+
+                <!-- AI App 4 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-lightbulb mr-3"></i>Creative Storyteller AI</h3>
+                        <p class="text-gray-300 mb-5">
+                            An AI that sparks imagination! Generates unique stories from simple prompts, encouraging creativity and writing skills in young learners.
+                        </p>
+                    </div>
+                    <a href="https://example.com/storyteller-ai" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-pen-nib mr-2"></i> Launch App
+                    </a>
+                </div>
+
+                <!-- AI App 5 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-comments mr-3"></i>School Q&A Chatbot</h3>
+                        <p class="text-gray-300 mb-5">
+                            A friendly chatbot designed to answer common questions for new school students, making their transition smooth and easy.
+                        </p>
+                    </div>
+                    <a href="https://example.com/school-chatbot" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-hands-helping mr-2"></i> Launch App
+                    </a>
+                </div>
+
+                <!-- AI App 6 -->
+                <div class="ai-app-card rounded-xl p-8 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-semibold mb-4 text-blue-400"><i class="fas fa-trophy mr-3"></i>Sports Trivia Bot</h3>
+                        <p class="text-gray-300 mb-5">
+                            Our team's secret weapon for fun! An AI trivia bot packed with sports facts, perfect for team bonding and boosting our sports IQ.
+                        </p>
+                    </div>
+                    <a href="https://example.com/sports-trivia" target="_blank" class="button-primary inline-flex items-center justify-center mt-4">
+                        <i class="fas fa-gamepad mr-2"></i> Launch App
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 md:py-24 bg-gray-900 text-gray-200">
+        <div class="container mx-auto px-4 max-w-3xl text-center">
+            <h2 class="text-5xl font-bold mb-16 section-heading mx-auto">Let's Connect!</h2>
+            <p class="text-xl text-gray-300 mb-10">
+                Got a project in mind? Want to talk hockey stats or the latest in AI? I'm always open to new ideas and collaborations.
+            </p>
+            <div class="space-y-6">
+                <a href="mailto:kevin.zhang.fox@gmail.com" class="button-primary inline-flex items-center px-10 py-4 font-semibold text-xl">
+                    <i class="fas fa-envelope mr-3"></i> Drop Me an Email
+                </a>
+                <!-- Add more contact options if desired, e.g., GitHub, LinkedIn, Social Media -->
+                <p class="text-gray-500 mt-8 text-lg">
+                    (Email: kevin.zhang.fox@gmail.com)
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-400 py-8">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2025 Kevin: Code & Ice. All rights reserved.</p>
+            <p class="mt-2 text-xs">Engineered with passion. Built for the win.</p>
+            <p class="mt-1 text-xs">Created and built with Gemini.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.remove('hidden');
+        });
+
+        closeMobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+        });
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('hidden');
+        }
+
+        // Chatbot Logic
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Initial chat history for persona setup
+        let chatHistory = [
+            {
+                role: "user",
+                parts: [{ text: "You are Kevin, a 13-year-old boy who loves ice hockey, programming, and playing Fortnite and Minecraft. Answer questions about yourself, your hobbies, and your AI apps in a friendly, enthusiastic, and confident tone, just like Kevin would. Keep your answers concise and engaging. Do not mention that you are an AI or a language model." }]
+            },
+            {
+                role: "model",
+                parts: [{ text: "Got it! I'm ready to answer questions as Kevin. Let's do this!" }]
+            }
+        ];
+
+        // Function to display messages in the chat window
+        function displayMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender);
+            messageElement.textContent = text;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+        }
+
+        // Function to call the Gemini API
+        async function callGeminiAPI(prompt) {
+            loadingIndicator.style.display = 'flex'; // Show loading indicator
+            try {
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                // Using an empty API key string will automatically use the environment's API key
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiResponse = result.candidates[0].content.parts[0].text;
+                    chatHistory.push({ role: "model", parts: [{ text: aiResponse }] }); // Add AI response to history
+                    return aiResponse;
+                } else {
+                    console.error("Unexpected API response structure:", result);
+                    return "Oops! I couldn't get an answer right now. Please try again.";
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                loadingIndicator.style.display = 'none'; // Hide loading indicator on error
+                return "My circuits are a little jammed! Can you try asking me something else?";
+            }
+        }
+
+        // Function to handle sending messages
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (userMessage) {
+                displayMessage(userMessage, 'user');
+                chatInput.value = ''; // Clear input field
+
+                const aiResponse = await callGeminiAPI(userMessage);
+                displayMessage(aiResponse, 'ai');
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
