@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Hockey Rink Grid Visualization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: fit-content;
+        }
+        h1 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4299e1;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #3182ce;
+        }
+        #rinkGridContainer {
+            margin-top: 20px;
+            display: grid;
+            border: 2px solid #333;
+            background-color: #e0f2f7;
+            padding: 5px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            overflow-x: auto;
+            font-size: 0.75rem;
+        }
+        .grid-cell {
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+            border: 0.5px dotted rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .team-a-player { background-color: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; }
+        .team-b-player { background-color: #3b82f6; color: white; border-radius: 50%; width: 20px; height: 20px; }
+        .goalie { background-color: #facc15; color: #333; border-radius: 50%; width: 22px; height: 22px; }
+        .puck { background-color: #000; border-radius: 50%; width: 10px; height: 10px; }
+        .goal { background-color: #f8fafc; color: #666; font-size: 0.6rem; }
+        .rink-line { background-color: #a0aec0; }
+        .legend {
+            margin-top: 30px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f7fafc;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend-color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .legend-color-box.square {
+            border-radius: 5px;
+        }
+        .legend-color-box.puck-legend {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-text {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            font-family: 'Courier New', monospace; /* Use a monospace font for better alignment */
+            font-size: 14px; /* Adjust font size as needed */
+            line-height: 1.5; /* Set line height to control vertical spacing */
+            padding: 10px; /* Add padding for better alignment */
+            text-align: left; /* Align text horizontally (default) */
+            resize: none; /* Optional: Disable resizing */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Ice Hockey Rink Strategy Visualizer</h1>
+    <p class="text-gray-600 mb-6">Enter the grid map below and click "Generate" to display the ice hockey rink.</p>
+
+    <textarea id="gridInput" rows="10" class="w-full p-3 border rounded mb-4" placeholder="Enter grid map here...">+------------------------------------------------------------------+
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  A1 .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  B1 .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  A4 .  .  .  .  .  .  .  B4 .  .  .  .  .  . |
+| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
+| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  B3 .  .  .  .  BG G |
+| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
+| .  .  .  .  .  .  .  A5 .  . A3  .  . .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  >  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  B5 .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
++------------------------------------------------------------------+</textarea>
+
+    <button id="generateGridBtn">Generate Rink Grid</button>
+    <div id="rinkGridContainer"></div>
+
+    <div class="image-container mt-8 text-center">
+        <img src="hockey_strategy_static.jpeg" alt="Hockey Strategy Static View" class="mx-auto rounded-lg shadow-lg">
+    </div>
+
+    <div class="legend">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">Legend:</h2>
+        <div class="legend-item">
+            <div class="legend-color-box team-a-player"></div>
+            <span class="legend-text">Team A Players (Red circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box team-b-player"></div>
+            <span class="legend-text">Team B Players (Blue circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box goalie"></div>
+            <span class="legend-text">Goalies (Yellow circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box puck puck-legend"></div>
+            <span class="legend-text">Hockey Puck (Small Black circle)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #f8fafc; border: 1px solid #cbd5e0;"></div>
+            <span class="legend-text">Goal (Light Gray/White squares)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #a0aec0; border-radius: 5px;"></div>
+            <span class="legend-text">Rink Line Marker (Gray square for '>')</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #e0f2f7; border: 1px dashed #cbd5e0;"></div>
+            <span class="legend-text">Empty Rink Space (Light Blue/Ice color)</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const generateGridBtn = document.getElementById('generateGridBtn');
+        const rinkGridContainer = document.getElementById('rinkGridContainer');
+        const gridInput = document.getElementById('gridInput');
+
+        generateGridBtn.addEventListener('click', renderHockeyGrid);
+        
+        // Automatically render the grid when page loads
+        renderHockeyGrid();
+
+        function parseGridString(gridString) {
+            const lines = gridString.split('\n').map(line => line.trim()).filter(line => line.length > 0 && !line.startsWith('+'));
+            const parsedGrid = [];
+
+            for (const line of lines) {
+                const row = [];
+                const content = line.substring(1, line.length - 1).trim();
+                const cells = content.match(/(\S+\s*|\s+)/g);
+                if (cells) {
+                    for (const cell of cells) {
+                        const trimmedCell = cell.trim();
+                        if (trimmedCell !== '') {
+                            row.push(trimmedCell);
+                        } else if (cell.length >= 2 && trimmedCell === '') {
+                            row.push('.');
+                        }
+                    }
+                }
+                if (row.length > 0) {
+                    parsedGrid.push(row);
+                }
+            }
+            return parsedGrid;
+        }
+
+        function renderHockeyGrid() {
+            const gridString = gridInput.value.trim();
+            const grid = parseGridString(gridString);
+            rinkGridContainer.innerHTML = '';
+
+            if (grid.length === 0) {
+                rinkGridContainer.textContent = 'Failed to parse grid data.';
+                return;
+            }
+
+            rinkGridContainer.style.gridTemplateColumns = `repeat(${grid[0].length}, 1fr)`;
+
+            grid.forEach(row => {
+                row.forEach(cellContent => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+
+                    if (cellContent.match(/^A[1-5]$/)) {
+                        cell.classList.add('team-a-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent.match(/^B[1-5]$/)) {
+                        cell.classList.add('team-b-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'AG' || cellContent === 'BG') {
+                        cell.classList.add('goalie');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'P') {
+                        cell.classList.add('puck');
+                    } else if (cellContent === 'G') {
+                        cell.classList.add('goal');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === '>') {
+                        cell.classList.add('rink-line');
+                        cell.textContent = cellContent;
+                    } else {
+                        cell.textContent = cellContent === '.' ? '' : cellContent;
+                    }
+                    rinkGridContainer.appendChild(cell);
+                });
+            });
+        }
+    });
+</script>
+</body>
+</html>
