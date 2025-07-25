@@ -66,7 +66,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: bold;
+            font-size: 10px;
+            line-height: 1;
             color: #333;
             border: 0.5px dotted rgba(0,0,0,0.1);
             box-sizing: border-box;
@@ -115,13 +118,30 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        textarea {
-            font-family: 'Courier New', monospace; /* Use a monospace font for better alignment */
-            font-size: 14px; /* Adjust font size as needed */
-            line-height: 1.5; /* Set line height to control vertical spacing */
-            padding: 10px; /* Add padding for better alignment */
-            text-align: left; /* Align text horizontally (default) */
-            resize: none; /* Optional: Disable resizing */
+        .code-editor {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 16px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 2px solid #404040;
+            border-radius: 8px;
+            resize: none;
+            width: 100%;
+            height: 400px;
+            white-space: pre;
+            overflow-wrap: normal;
+            word-break: keep-all;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            font-variant-ligatures: normal;
+            font-feature-settings: normal;
+        }
+        .code-editor:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.3);
         }
     </style>
 </head>
@@ -130,16 +150,16 @@
     <h1>Ice Hockey Rink Strategy Visualizer</h1>
     <p class="text-gray-600 mb-6">Enter the grid map below and click "Generate" to display the ice hockey rink.</p>
 
-    <textarea id="gridInput" rows="10" class="w-full p-3 border rounded mb-4" placeholder="Enter grid map here...">+------------------------------------------------------------------+
+    <textarea id="gridInput" class="code-editor mb-4" spellcheck="false">+------------------------------------------------------------------+
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  A1 .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  B1 .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  A4 .  .  .  .  .  .  .  B4 .  .  .  .  .  . |
+| .  .  .  .  .  A4 .  .  .  .  .  .  .  .  .  B4 .  .  .  .  .  . |
 | G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
-| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  B3 .  .  .  .  BG G |
+| G  AG .  .  .  .  .  .  .  .  A2 P  B2 .  .  B3 .  .  .  .  BG G |
 | G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
-| .  .  .  .  .  .  .  A5 .  . A3  .  . .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  A5 .  .  A3 .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  >  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  B5 .  .  . |
@@ -150,10 +170,6 @@
 
     <button id="generateGridBtn">Generate Rink Grid</button>
     <div id="rinkGridContainer"></div>
-
-    <div class="image-container mt-8 text-center">
-        <img src="hockey_strategy_static.jpeg" alt="Hockey Strategy Static View" class="mx-auto rounded-lg shadow-lg">
-    </div>
 
     <div class="legend">
         <h2 class="text-lg font-semibold mb-4 text-gray-800">Legend:</h2>
