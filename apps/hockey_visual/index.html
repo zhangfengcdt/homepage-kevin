@@ -112,6 +112,14 @@
             color: #4a5568;
             font-size: 0.9rem;
         }
+        .movement-arrow {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .grid-container {
+            position: relative;
+        }
         .image-container img {
             max-width: 100%;
             height: auto;
@@ -148,9 +156,12 @@
 <body>
 <div class="container">
     <h1>Ice Hockey Rink Strategy Visualizer</h1>
-    <p class="text-gray-600 mb-6">Enter the grid map below and click "Generate" to display the ice hockey rink.</p>
+    <p class="text-gray-600 mb-6">Enter the start and end position maps below and click "Generate" to display player movements.</p>
 
-    <textarea id="gridInput" class="code-editor mb-4" spellcheck="false">+------------------------------------------------------------------+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-700">Start Positions</h3>
+            <textarea id="startGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  A1 .  .  .  .  .  .  .  .  . |
@@ -167,8 +178,30 @@
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 +------------------------------------------------------------------+</textarea>
+        </div>
+        <div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-700">End Positions</h3>
+            <textarea id="endGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  A1 .  B1 .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| G  .  .  .  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  G |
+| G  AG .  .  .  .  .  .  A2 .  .  .  P  B2 .  .  .  .  B3 .  BG G |
+| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
+| .  .  .  .  .  .  .  .  .  A5 .  A3 .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  >  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  B5 .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
++------------------------------------------------------------------+</textarea>
+        </div>
+    </div>
 
-    <button id="generateGridBtn">Generate Rink Grid</button>
+    <button id="generateGridBtn">Generate Movement Visualization</button>
     <div id="rinkGridContainer"></div>
 
     <div class="legend">
@@ -208,12 +241,13 @@
     document.addEventListener('DOMContentLoaded', () => {
         const generateGridBtn = document.getElementById('generateGridBtn');
         const rinkGridContainer = document.getElementById('rinkGridContainer');
-        const gridInput = document.getElementById('gridInput');
+        const startGridInput = document.getElementById('startGridInput');
+        const endGridInput = document.getElementById('endGridInput');
 
-        generateGridBtn.addEventListener('click', renderHockeyGrid);
+        generateGridBtn.addEventListener('click', renderMovementVisualization);
         
         // Automatically render the grid when page loads
-        renderHockeyGrid();
+        renderMovementVisualization();
 
         function parseGridString(gridString) {
             const lines = gridString.split('\n').map(line => line.trim()).filter(line => line.length > 0 && !line.startsWith('+'));
@@ -240,18 +274,39 @@
             return parsedGrid;
         }
 
-        function renderHockeyGrid() {
-            const gridString = gridInput.value.trim();
-            const grid = parseGridString(gridString);
+        function renderMovementVisualization() {
+            const startGridString = startGridInput.value.trim();
+            const endGridString = endGridInput.value.trim();
+            const startGrid = parseGridString(startGridString);
+            const endGrid = parseGridString(endGridString);
+            
             rinkGridContainer.innerHTML = '';
 
-            if (grid.length === 0) {
+            if (startGrid.length === 0 || endGrid.length === 0) {
                 rinkGridContainer.textContent = 'Failed to parse grid data.';
                 return;
             }
 
-            rinkGridContainer.style.gridTemplateColumns = `repeat(${grid[0].length}, 1fr)`;
-
+            // Create movement visualization only
+            const movementContainer = document.createElement('div');
+            movementContainer.className = 'text-center';
+            
+            const movementTitle = document.createElement('h3');
+            movementTitle.className = 'text-lg font-semibold mb-4 text-gray-700';
+            movementTitle.textContent = 'Player Movements';
+            movementContainer.appendChild(movementTitle);
+            
+            const movementGridContainer = document.createElement('div');
+            movementGridContainer.style.display = 'grid';
+            movementGridContainer.style.gridTemplateColumns = `repeat(${startGrid[0].length}, 1fr)`;
+            movementGridContainer.className = 'border-2 border-gray-700 bg-gray-100 p-2 rounded-lg shadow-lg inline-block grid-container';
+            renderMovementGrid(startGrid, endGrid, movementGridContainer);
+            movementContainer.appendChild(movementGridContainer);
+            
+            rinkGridContainer.appendChild(movementContainer);
+        }
+        
+        function renderGrid(grid, container) {
             grid.forEach(row => {
                 row.forEach(cellContent => {
                     const cell = document.createElement('div');
@@ -277,9 +332,139 @@
                     } else {
                         cell.textContent = cellContent === '.' ? '' : cellContent;
                     }
-                    rinkGridContainer.appendChild(cell);
+                    container.appendChild(cell);
                 });
             });
+        }
+        
+        function renderMovementGrid(startGrid, endGrid, container) {
+            const playerMovements = findPlayerMovements(startGrid, endGrid);
+            
+            // Render the basic grid first (showing start positions)
+            startGrid.forEach((row, rowIndex) => {
+                row.forEach((cellContent, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+                    cell.setAttribute('data-row', rowIndex);
+                    cell.setAttribute('data-col', colIndex);
+
+                    if (cellContent.match(/^A[1-5]$/)) {
+                        cell.classList.add('team-a-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent.match(/^B[1-5]$/)) {
+                        cell.classList.add('team-b-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'AG' || cellContent === 'BG') {
+                        cell.classList.add('goalie');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'P') {
+                        cell.classList.add('puck');
+                    } else if (cellContent === 'G') {
+                        cell.classList.add('goal');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === '>') {
+                        cell.classList.add('rink-line');
+                        cell.textContent = cellContent;
+                    } else {
+                        cell.textContent = cellContent === '.' ? '' : cellContent;
+                    }
+                    container.appendChild(cell);
+                });
+            });
+            
+            // Add movement arrows after grid is rendered
+            setTimeout(() => {
+                playerMovements.forEach(movement => {
+                    if (movement.startRow !== movement.endRow || movement.startCol !== movement.endCol) {
+                        const startCell = container.querySelector(`[data-row="${movement.startRow}"][data-col="${movement.startCol}"]`);
+                        const endCell = container.querySelector(`[data-row="${movement.endRow}"][data-col="${movement.endCol}"]`);
+                        
+                        if (startCell && endCell) {
+                            const startRect = startCell.getBoundingClientRect();
+                            const endRect = endCell.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+                            
+                            // Calculate centers relative to container
+                            const startX = startRect.left - containerRect.left + startRect.width / 2;
+                            const startY = startRect.top - containerRect.top + startRect.height / 2;
+                            const endX = endRect.left - containerRect.left + endRect.width / 2;
+                            const endY = endRect.top - containerRect.top + endRect.height / 2;
+                            
+                            // Calculate arrow properties
+                            const deltaX = endX - startX;
+                            const deltaY = endY - startY;
+                            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                            
+                            const arrow = document.createElement('div');
+                            arrow.className = 'movement-arrow';
+                            arrow.style.position = 'absolute';
+                            arrow.style.left = `${startX}px`;
+                            arrow.style.top = `${startY}px`;
+                            arrow.style.width = `${distance}px`;
+                            arrow.style.height = '3px';
+                            arrow.style.backgroundColor = movement.player.match(/^A/) ? '#ef4444' : '#3b82f6';
+                            arrow.style.transformOrigin = '0 50%';
+                            arrow.style.transform = `rotate(${angle}deg)`;
+                            arrow.style.pointerEvents = 'none';
+                            arrow.style.zIndex = '10';
+                            
+                            // Add arrowhead
+                            const arrowhead = document.createElement('div');
+                            arrowhead.style.position = 'absolute';
+                            arrowhead.style.right = '-8px';
+                            arrowhead.style.top = '-5px';
+                            arrowhead.style.width = '0';
+                            arrowhead.style.height = '0';
+                            arrowhead.style.borderLeft = `8px solid ${movement.player.match(/^A/) ? '#ef4444' : '#3b82f6'}`;
+                            arrowhead.style.borderTop = '5px solid transparent';
+                            arrowhead.style.borderBottom = '5px solid transparent';
+                            
+                            arrow.appendChild(arrowhead);
+                            container.appendChild(arrow);
+                        }
+                    }
+                });
+            }, 50);
+        }
+        
+        function findPlayerMovements(startGrid, endGrid) {
+            const movements = [];
+            const startPositions = {};
+            const endPositions = {};
+            
+            // Find all player positions in start grid
+            startGrid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.match(/^[AB][1-5G]$/) || cell === 'P') {
+                        startPositions[cell] = { row: rowIndex, col: colIndex };
+                    }
+                });
+            });
+            
+            // Find all player positions in end grid
+            endGrid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.match(/^[AB][1-5G]$/) || cell === 'P') {
+                        endPositions[cell] = { row: rowIndex, col: colIndex };
+                    }
+                });
+            });
+            
+            // Calculate movements
+            Object.keys(startPositions).forEach(player => {
+                if (endPositions[player]) {
+                    movements.push({
+                        player: player,
+                        startRow: startPositions[player].row,
+                        startCol: startPositions[player].col,
+                        endRow: endPositions[player].row,
+                        endCol: endPositions[player].col
+                    });
+                }
+            });
+            
+            return movements;
         }
     });
 </script>
