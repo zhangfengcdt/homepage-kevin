@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ice Hockey Rink Grid Visualization</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏒</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -155,12 +156,20 @@
 </head>
 <body>
 <div class="container">
-    <h1>Ice Hockey Rink Strategy Visualizer</h1>
+    <div class="flex items-center justify-center mb-4">
+        <img src="kevin_logo.png" alt="Kevin's Logo" class="h-12 w-auto mr-4">
+        <h1 class="mb-0">🏒 Ice Hockey Rink Strategy Visualizer</h1>
+    </div>
     <p class="text-gray-600 mb-6">Enter the start and end position maps below and click "Generate" to display player movements.</p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-            <h3 class="text-lg font-semibold mb-2 text-gray-700">Start Positions</h3>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-700">Start Positions</h3>
+                <button id="pasteStartBtn" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                    Paste
+                </button>
+            </div>
             <textarea id="startGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
@@ -170,7 +179,7 @@
 | G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
 | G  AG .  .  .  .  .  .  .  .  A2 P  B2 .  .  B3 .  .  .  .  BG G |
 | G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
-| .  .  .  .  .  .  .  A5 .  .  A3 .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  A5 .  .  A3 .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  >  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  B5 .  .  . |
@@ -180,7 +189,12 @@
 +------------------------------------------------------------------+</textarea>
         </div>
         <div>
-            <h3 class="text-lg font-semibold mb-2 text-gray-700">End Positions</h3>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-700">End Positions</h3>
+                <button id="pasteEndBtn" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                    Paste
+                </button>
+            </div>
             <textarea id="endGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
 | .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
@@ -243,8 +257,31 @@
         const rinkGridContainer = document.getElementById('rinkGridContainer');
         const startGridInput = document.getElementById('startGridInput');
         const endGridInput = document.getElementById('endGridInput');
+        const pasteStartBtn = document.getElementById('pasteStartBtn');
+        const pasteEndBtn = document.getElementById('pasteEndBtn');
 
         generateGridBtn.addEventListener('click', renderMovementVisualization);
+        
+        // Add paste functionality
+        pasteStartBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                startGridInput.value = text;
+                renderMovementVisualization();
+            } catch (err) {
+                alert('Failed to paste from clipboard. Please make sure you have given clipboard permissions.');
+            }
+        });
+        
+        pasteEndBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                endGridInput.value = text;
+                renderMovementVisualization();
+            } catch (err) {
+                alert('Failed to paste from clipboard. Please make sure you have given clipboard permissions.');
+            }
+        });
         
         // Automatically render the grid when page loads
         renderMovementVisualization();

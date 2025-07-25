@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Hockey Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #gameContainer {
+            position: relative;
+            border: 4px solid #333;
+            background: linear-gradient(45deg, #0066cc, #004499);
+            border-radius: 10px;
+        }
+
+        #gameCanvas {
+            background: #87CEEB;
+            border-radius: 6px;
+            cursor: none;
+        }
+
+        #scoreboard {
+            display: flex;
+            justify-content: space-between;
+            width: 800px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            background: #0066cc;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0080ff;
+        }
+
+        #instructions {
+            margin-top: 20px;
+            text-align: center;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Air Hockey Game</h1>
+    
+    <div id="scoreboard">
+        <div>Player 1: <span id="player1Score">0</span></div>
+        <div>Player 2: <span id="player2Score">0</span></div>
+    </div>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <div id="controls">
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="resetGame()">Reset</button>
+    </div>
+
+    <div id="instructions">
+        <p>Player 1: Use mouse to control paddle</p>
+        <p>Player 2: Use WASD keys to control paddle</p>
+        <p>First to 5 goals wins!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameRunning = false;
+        let player1Score = 0;
+        let player2Score = 0;
+        let gameWinner = null;
+
+        const puck = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 15,
+            vx: 0,
+            vy: 0,
+            speed: 5
+        };
+
+        const paddle1 = {
+            x: 100,
+            y: canvas.height / 2,
+            radius: 30,
+            color: '#ff4444'
+        };
+
+        const paddle2 = {
+            x: canvas.width - 100,
+            y: canvas.height / 2,
+            radius: 30,
+            color: '#44ff44'
+        };
+
+        const keys = {};
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            paddle1.x = e.clientX - rect.left;
+            paddle1.y = e.clientY - rect.top;
+
+            paddle1.x = Math.max(paddle1.radius, Math.min(canvas.width / 2 - 50, paddle1.x));
+            paddle1.y = Math.max(paddle1.radius, Math.min(canvas.height - paddle1.radius, paddle1.y));
+        });
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        function movePaddle2() {
+            const speed = 4;
+            if (keys['w'] && paddle2.y > paddle2.radius) paddle2.y -= speed;
+            if (keys['s'] && paddle2.y < canvas.height - paddle2.radius) paddle2.y += speed;
+            if (keys['a'] && paddle2.x > canvas.width / 2 + 50) paddle2.x -= speed;
+            if (keys['d'] && paddle2.x < canvas.width - paddle2.radius) paddle2.x += speed;
+        }
+
+        function drawPaddle(paddle) {
+            ctx.beginPath();
+            ctx.arc(paddle.x, paddle.y, paddle.radius, 0, Math.PI * 2);
+            ctx.fillStyle = paddle.color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawPuck() {
+            ctx.beginPath();
+            ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawField() {
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, canvas.height / 2 - 60, 20, 120);
+            ctx.fillRect(canvas.width - 20, canvas.height / 2 - 60, 20, 120);
+        }
+
+        function checkCollision(obj1, obj2) {
+            const dx = obj1.x - obj2.x;
+            const dy = obj1.y - obj2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < obj1.radius + obj2.radius;
+        }
+
+        function handlePaddleCollision(paddle) {
+            if (checkCollision(puck, paddle)) {
+                const dx = puck.x - paddle.x;
+                const dy = puck.y - paddle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const normalX = dx / distance;
+                const normalY = dy / distance;
+                
+                puck.x = paddle.x + normalX * (paddle.radius + puck.radius);
+                puck.y = paddle.y + normalY * (paddle.radius + puck.radius);
+                
+                const speed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+                puck.vx = normalX * Math.max(speed, 12);
+                puck.vy = normalY * Math.max(speed, 12);
+            }
+        }
+
+        function updatePuck() {
+            puck.x += puck.vx;
+            puck.y += puck.vy;
+
+            if (puck.y <= puck.radius || puck.y >= canvas.height - puck.radius) {
+                puck.vy = -puck.vy;
+                puck.y = Math.max(puck.radius, Math.min(canvas.height - puck.radius, puck.y));
+            }
+
+            if (puck.x <= puck.radius) {
+                if (puck.y > canvas.height / 2 - 60 && puck.y < canvas.height / 2 + 60) {
+                    player2Score++;
+                    updateScore();
+                    resetPuck();
+                } else {
+                    puck.vx = -puck.vx;
+                    puck.x = puck.radius;
+                }
+            }
+
+            if (puck.x >= canvas.width - puck.radius) {
+                if (puck.y > canvas.height / 2 - 60 && puck.y < canvas.height / 2 + 60) {
+                    player1Score++;
+                    updateScore();
+                    resetPuck();
+                } else {
+                    puck.vx = -puck.vx;
+                    puck.x = canvas.width - puck.radius;
+                }
+            }
+
+            puck.vx *= 0.998;
+            puck.vy *= 0.998;
+        }
+
+        function resetPuck() {
+            puck.x = canvas.width / 2;
+            puck.y = canvas.height / 2;
+            puck.vx = (Math.random() - 0.5) * 16;
+            puck.vy = (Math.random() - 0.5) * 16;
+        }
+
+        function updateScore() {
+            document.getElementById('player1Score').textContent = player1Score;
+            document.getElementById('player2Score').textContent = player2Score;
+
+            if (player1Score >= 5) {
+                gameWinner = "Player 1";
+                gameRunning = false;
+            } else if (player2Score >= 5) {
+                gameWinner = "Player 2";
+                gameRunning = false;
+            }
+        }
+
+        function gameLoop() {
+            if (!gameRunning) {
+                if (gameWinner) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${gameWinner} Wins!`, canvas.width / 2, canvas.height / 2);
+                }
+                return;
+            }
+
+            drawField();
+            
+            movePaddle2();
+            handlePaddleCollision(paddle1);
+            handlePaddleCollision(paddle2);
+            updatePuck();
+
+            drawPaddle(paddle1);
+            drawPaddle(paddle2);
+            drawPuck();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (!gameRunning && !gameWinner) {
+                gameRunning = true;
+                resetPuck();
+                gameLoop();
+            }
+        }
+
+        function resetGame() {
+            gameRunning = false;
+            gameWinner = null;
+            player1Score = 0;
+            player2Score = 0;
+            updateScore();
+            resetPuck();
+            drawField();
+            drawPaddle(paddle1);
+            drawPaddle(paddle2);
+            drawPuck();
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
