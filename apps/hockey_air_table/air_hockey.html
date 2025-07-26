@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Air Hockey Game</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background: #1a1a1a;
             color: white;
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
+            touch-action: none;
+            overflow: hidden;
         }
 
         #gameContainer {
@@ -21,37 +23,48 @@
             border: 4px solid #333;
             background: linear-gradient(45deg, #0066cc, #004499);
             border-radius: 10px;
+            max-width: 100%;
+            touch-action: none;
         }
 
         #gameCanvas {
             background: #87CEEB;
             border-radius: 6px;
             cursor: none;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
         }
 
         #scoreboard {
             display: flex;
             justify-content: space-between;
-            width: 800px;
-            margin-bottom: 20px;
-            font-size: 24px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 10px;
+            font-size: 20px;
             font-weight: bold;
+            padding: 0 10px;
         }
 
         #controls {
-            margin-top: 20px;
+            margin-top: 10px;
             text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
 
         button {
             background: #0066cc;
             border: none;
             color: white;
-            padding: 10px 20px;
-            margin: 5px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -59,9 +72,30 @@
         }
 
         #instructions {
-            margin-top: 20px;
+            margin-top: 10px;
             text-align: center;
             color: #ccc;
+            font-size: 14px;
+            padding: 0 10px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            #scoreboard {
+                font-size: 16px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            #instructions {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -72,8 +106,8 @@
     </div>
     
     <div id="scoreboard">
-        <div>Player 1: <span id="player1Score">0</span></div>
-        <div>Player 2: <span id="player2Score">0</span></div>
+        <div>You: <span id="player1Score">0</span></div>
+        <div>AI: <span id="player2Score">0</span></div>
     </div>
 
     <div id="gameContainer">
@@ -83,22 +117,56 @@
     <div id="controls">
         <button onclick="startGame()">Start Game</button>
         <button onclick="resetGame()">Reset</button>
+        <button onclick="toggleDifficulty()" id="difficultyBtn">Difficulty: Medium</button>
     </div>
 
     <div id="instructions">
-        <p>Player 1: Use mouse to control paddle</p>
-        <p>Player 2: Use WASD keys to control paddle</p>
+        <p>Control your paddle (red) with mouse or touch</p>
+        <p>AI controls the green paddle</p>
         <p>First to 5 goals wins!</p>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
+        let canvasScale = 1;
+        let touchId = null;
+        let aiDifficulty = 'medium';
+        let aiReactionTime = 0.7;
+        let aiMaxSpeed = 3.5;
+        let aiPredictionDepth = 30;
 
         let gameRunning = false;
         let player1Score = 0;
         let player2Score = 0;
         let gameWinner = null;
+        
+        function resizeCanvas() {
+            const maxWidth = Math.min(800, window.innerWidth - 20);
+            const maxHeight = Math.min(400, window.innerHeight - 200);
+            const aspectRatio = 800 / 400;
+            
+            let width = maxWidth;
+            let height = width / aspectRatio;
+            
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = height * aspectRatio;
+            }
+            
+            canvasScale = width / 800;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            canvas.width = 800;
+            canvas.height = 400;
+            
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.style.width = width + 'px';
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         const puck = {
             x: canvas.width / 2,
@@ -124,30 +192,115 @@
         };
 
         const keys = {};
-
-        canvas.addEventListener('mousemove', (e) => {
+        
+        function handlePointerMove(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            paddle1.x = e.clientX - rect.left;
-            paddle1.y = e.clientY - rect.top;
-
+            const x = (clientX - rect.left) / canvasScale;
+            const y = (clientY - rect.top) / canvasScale;
+            
+            paddle1.x = x;
+            paddle1.y = y;
+            
             paddle1.x = Math.max(paddle1.radius, Math.min(canvas.width / 2 - 50, paddle1.x));
             paddle1.y = Math.max(paddle1.radius, Math.min(canvas.height - paddle1.radius, paddle1.y));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (touchId === null) {
+                handlePointerMove(e.clientX, e.clientY);
+            }
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (touchId === null && e.touches.length > 0) {
+                const touch = e.touches[0];
+                touchId = touch.identifier;
+                handlePointerMove(touch.clientX, touch.clientY);
+            }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                if (touch.identifier === touchId) {
+                    handlePointerMove(touch.clientX, touch.clientY);
+                    break;
+                }
+            }
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchId) {
+                    touchId = null;
+                    break;
+                }
+            }
         });
 
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-        });
-
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-
-        function movePaddle2() {
-            const speed = 4;
-            if (keys['w'] && paddle2.y > paddle2.radius) paddle2.y -= speed;
-            if (keys['s'] && paddle2.y < canvas.height - paddle2.radius) paddle2.y += speed;
-            if (keys['a'] && paddle2.x > canvas.width / 2 + 50) paddle2.x -= speed;
-            if (keys['d'] && paddle2.x < canvas.width - paddle2.radius) paddle2.x += speed;
+        function predictPuckPosition(steps) {
+            let px = puck.x;
+            let py = puck.y;
+            let pvx = puck.vx;
+            let pvy = puck.vy;
+            
+            for (let i = 0; i < steps; i++) {
+                px += pvx;
+                py += pvy;
+                
+                if (py <= puck.radius || py >= canvas.height - puck.radius) {
+                    pvy = -pvy;
+                    py = Math.max(puck.radius, Math.min(canvas.height - puck.radius, py));
+                }
+                
+                if (px <= puck.radius || px >= canvas.width - puck.radius) {
+                    pvx = -pvx;
+                    px = Math.max(puck.radius, Math.min(canvas.width - puck.radius, px));
+                }
+                
+                pvx *= 0.998;
+                pvy *= 0.998;
+            }
+            
+            return { x: px, y: py };
+        }
+        
+        function moveAI() {
+            if (!gameRunning) return;
+            
+            const paddleZone = canvas.width / 2 + 50;
+            let targetX = canvas.width - 100;
+            let targetY = canvas.height / 2;
+            
+            if (puck.vx > 0 && puck.x > canvas.width * 0.3) {
+                const prediction = predictPuckPosition(aiPredictionDepth);
+                
+                if (prediction.x > paddleZone) {
+                    targetX = Math.min(canvas.width - paddle2.radius, Math.max(paddleZone, prediction.x));
+                    targetY = prediction.y;
+                }
+            } else {
+                targetX = canvas.width - 100;
+                targetY = canvas.height / 2;
+            }
+            
+            const dx = targetX - paddle2.x;
+            const dy = targetY - paddle2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                const moveX = (dx / distance) * aiMaxSpeed * aiReactionTime;
+                const moveY = (dy / distance) * aiMaxSpeed * aiReactionTime;
+                
+                paddle2.x += moveX;
+                paddle2.y += moveY;
+                
+                paddle2.x = Math.max(paddleZone, Math.min(canvas.width - paddle2.radius, paddle2.x));
+                paddle2.y = Math.max(paddle2.radius, Math.min(canvas.height - paddle2.radius, paddle2.y));
+            }
         }
 
         function drawPaddle(paddle) {
@@ -262,10 +415,10 @@
             document.getElementById('player2Score').textContent = player2Score;
 
             if (player1Score >= 5) {
-                gameWinner = "Player 1";
+                gameWinner = "You Win";
                 gameRunning = false;
             } else if (player2Score >= 5) {
-                gameWinner = "Player 2";
+                gameWinner = "AI Wins";
                 gameRunning = false;
             }
         }
@@ -285,7 +438,7 @@
 
             drawField();
             
-            movePaddle2();
+            moveAI();
             handlePaddleCollision(paddle1);
             handlePaddleCollision(paddle2);
             updatePuck();
@@ -318,6 +471,30 @@
             drawPuck();
         }
 
+        function toggleDifficulty() {
+            const btn = document.getElementById('difficultyBtn');
+            
+            if (aiDifficulty === 'easy') {
+                aiDifficulty = 'medium';
+                aiReactionTime = 0.7;
+                aiMaxSpeed = 3.5;
+                aiPredictionDepth = 30;
+                btn.textContent = 'Difficulty: Medium';
+            } else if (aiDifficulty === 'medium') {
+                aiDifficulty = 'hard';
+                aiReactionTime = 0.9;
+                aiMaxSpeed = 4.5;
+                aiPredictionDepth = 50;
+                btn.textContent = 'Difficulty: Hard';
+            } else {
+                aiDifficulty = 'easy';
+                aiReactionTime = 0.5;
+                aiMaxSpeed = 2.5;
+                aiPredictionDepth = 15;
+                btn.textContent = 'Difficulty: Easy';
+            }
+        }
+        
         resetGame();
     </script>
 </body>
