@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Air Hockey Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            border: 4px solid #333;
+            background: linear-gradient(45deg, #0066cc, #004499);
+            border-radius: 10px;
+            max-width: 100%;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            background: #87CEEB;
+            border-radius: 6px;
+            cursor: none;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+        }
+
+        #scoreboard {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        #controls {
+            margin-top: 10px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            background: #0066cc;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            background: #0080ff;
+        }
+
+        #instructions {
+            margin-top: 10px;
+            text-align: center;
+            color: #ccc;
+            font-size: 14px;
+            padding: 0 10px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            #scoreboard {
+                font-size: 16px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            #instructions {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+        <img src="../../images/kevin_logo.png" alt="Kevin Logo" style="height: 40px; width: 40px; margin-right: 15px;">
+        <h1 style="margin: 0;">Air Hockey Game</h1>
+    </div>
+    
+    <div id="scoreboard">
+        <div>You: <span id="player1Score">0</span></div>
+        <div>AI: <span id="player2Score">0</span></div>
+    </div>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <div id="controls">
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="resetGame()">Reset</button>
+        <button onclick="toggleDifficulty()" id="difficultyBtn">Difficulty: Medium</button>
+    </div>
+
+    <div id="instructions">
+        <p>Control your paddle (red) with mouse or touch</p>
+        <p>AI controls the green paddle</p>
+        <p>First to 5 goals wins!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let canvasScale = 1;
+        let touchId = null;
+        let aiDifficulty = 'medium';
+        let aiReactionTime = 0.7;
+        let aiMaxSpeed = 3.5;
+        let aiPredictionDepth = 30;
+
+        let gameRunning = false;
+        let player1Score = 0;
+        let player2Score = 0;
+        let gameWinner = null;
+        
+        function resizeCanvas() {
+            const maxWidth = Math.min(800, window.innerWidth - 20);
+            const maxHeight = Math.min(400, window.innerHeight - 200);
+            const aspectRatio = 800 / 400;
+            
+            let width = maxWidth;
+            let height = width / aspectRatio;
+            
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = height * aspectRatio;
+            }
+            
+            canvasScale = width / 800;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            canvas.width = 800;
+            canvas.height = 400;
+            
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.style.width = width + 'px';
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const puck = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 15,
+            vx: 0,
+            vy: 0,
+            speed: 5
+        };
+
+        const paddle1 = {
+            x: 100,
+            y: canvas.height / 2,
+            radius: 30,
+            color: '#ff4444'
+        };
+
+        const paddle2 = {
+            x: canvas.width - 100,
+            y: canvas.height / 2,
+            radius: 30,
+            color: '#44ff44'
+        };
+
+        const keys = {};
+        
+        function handlePointerMove(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (clientX - rect.left) / canvasScale;
+            const y = (clientY - rect.top) / canvasScale;
+            
+            paddle1.x = x;
+            paddle1.y = y;
+            
+            paddle1.x = Math.max(paddle1.radius, Math.min(canvas.width / 2 - 50, paddle1.x));
+            paddle1.y = Math.max(paddle1.radius, Math.min(canvas.height - paddle1.radius, paddle1.y));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (touchId === null) {
+                handlePointerMove(e.clientX, e.clientY);
+            }
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (touchId === null && e.touches.length > 0) {
+                const touch = e.touches[0];
+                touchId = touch.identifier;
+                handlePointerMove(touch.clientX, touch.clientY);
+            }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                if (touch.identifier === touchId) {
+                    handlePointerMove(touch.clientX, touch.clientY);
+                    break;
+                }
+            }
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === touchId) {
+                    touchId = null;
+                    break;
+                }
+            }
+        });
+
+        function predictPuckPosition(steps) {
+            let px = puck.x;
+            let py = puck.y;
+            let pvx = puck.vx;
+            let pvy = puck.vy;
+            
+            for (let i = 0; i < steps; i++) {
+                px += pvx;
+                py += pvy;
+                
+                if (py <= puck.radius || py >= canvas.height - puck.radius) {
+                    pvy = -pvy;
+                    py = Math.max(puck.radius, Math.min(canvas.height - puck.radius, py));
+                }
+                
+                if (px <= puck.radius || px >= canvas.width - puck.radius) {
+                    pvx = -pvx;
+                    px = Math.max(puck.radius, Math.min(canvas.width - puck.radius, px));
+                }
+                
+                pvx *= 0.998;
+                pvy *= 0.998;
+            }
+            
+            return { x: px, y: py };
+        }
+        
+        function moveAI() {
+            if (!gameRunning) return;
+            
+            const paddleZone = canvas.width / 2 + 50;
+            let targetX = canvas.width - 100;
+            let targetY = canvas.height / 2;
+            
+            if (puck.vx > 0 && puck.x > canvas.width * 0.3) {
+                const prediction = predictPuckPosition(aiPredictionDepth);
+                
+                if (prediction.x > paddleZone) {
+                    targetX = Math.min(canvas.width - paddle2.radius, Math.max(paddleZone, prediction.x));
+                    targetY = prediction.y;
+                }
+            } else {
+                targetX = canvas.width - 100;
+                targetY = canvas.height / 2;
+            }
+            
+            const dx = targetX - paddle2.x;
+            const dy = targetY - paddle2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                const moveX = (dx / distance) * aiMaxSpeed * aiReactionTime;
+                const moveY = (dy / distance) * aiMaxSpeed * aiReactionTime;
+                
+                paddle2.x += moveX;
+                paddle2.y += moveY;
+                
+                paddle2.x = Math.max(paddleZone, Math.min(canvas.width - paddle2.radius, paddle2.x));
+                paddle2.y = Math.max(paddle2.radius, Math.min(canvas.height - paddle2.radius, paddle2.y));
+            }
+        }
+
+        function drawPaddle(paddle) {
+            ctx.beginPath();
+            ctx.arc(paddle.x, paddle.y, paddle.radius, 0, Math.PI * 2);
+            ctx.fillStyle = paddle.color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawPuck() {
+            ctx.beginPath();
+            ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawField() {
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, canvas.height / 2 - 60, 20, 120);
+            ctx.fillRect(canvas.width - 20, canvas.height / 2 - 60, 20, 120);
+        }
+
+        function checkCollision(obj1, obj2) {
+            const dx = obj1.x - obj2.x;
+            const dy = obj1.y - obj2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < obj1.radius + obj2.radius;
+        }
+
+        function handlePaddleCollision(paddle) {
+            if (checkCollision(puck, paddle)) {
+                const dx = puck.x - paddle.x;
+                const dy = puck.y - paddle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const normalX = dx / distance;
+                const normalY = dy / distance;
+                
+                puck.x = paddle.x + normalX * (paddle.radius + puck.radius);
+                puck.y = paddle.y + normalY * (paddle.radius + puck.radius);
+                
+                const speed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+                puck.vx = normalX * Math.max(speed, 12);
+                puck.vy = normalY * Math.max(speed, 12);
+            }
+        }
+
+        function updatePuck() {
+            puck.x += puck.vx;
+            puck.y += puck.vy;
+
+            if (puck.y <= puck.radius || puck.y >= canvas.height - puck.radius) {
+                puck.vy = -puck.vy;
+                puck.y = Math.max(puck.radius, Math.min(canvas.height - puck.radius, puck.y));
+            }
+
+            if (puck.x <= puck.radius) {
+                if (puck.y > canvas.height / 2 - 60 && puck.y < canvas.height / 2 + 60) {
+                    player2Score++;
+                    updateScore();
+                    resetPuck();
+                } else {
+                    puck.vx = -puck.vx;
+                    puck.x = puck.radius;
+                }
+            }
+
+            if (puck.x >= canvas.width - puck.radius) {
+                if (puck.y > canvas.height / 2 - 60 && puck.y < canvas.height / 2 + 60) {
+                    player1Score++;
+                    updateScore();
+                    resetPuck();
+                } else {
+                    puck.vx = -puck.vx;
+                    puck.x = canvas.width - puck.radius;
+                }
+            }
+
+            puck.vx *= 0.998;
+            puck.vy *= 0.998;
+        }
+
+        function resetPuck() {
+            puck.x = canvas.width / 2;
+            puck.y = canvas.height / 2;
+            puck.vx = (Math.random() - 0.5) * 16;
+            puck.vy = (Math.random() - 0.5) * 16;
+        }
+
+        function updateScore() {
+            document.getElementById('player1Score').textContent = player1Score;
+            document.getElementById('player2Score').textContent = player2Score;
+
+            if (player1Score >= 5) {
+                gameWinner = "You Win";
+                gameRunning = false;
+            } else if (player2Score >= 5) {
+                gameWinner = "AI Wins";
+                gameRunning = false;
+            }
+        }
+
+        function gameLoop() {
+            if (!gameRunning) {
+                if (gameWinner) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${gameWinner} Wins!`, canvas.width / 2, canvas.height / 2);
+                }
+                return;
+            }
+
+            drawField();
+            
+            moveAI();
+            handlePaddleCollision(paddle1);
+            handlePaddleCollision(paddle2);
+            updatePuck();
+
+            drawPaddle(paddle1);
+            drawPaddle(paddle2);
+            drawPuck();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (!gameRunning && !gameWinner) {
+                gameRunning = true;
+                resetPuck();
+                gameLoop();
+            }
+        }
+
+        function resetGame() {
+            gameRunning = false;
+            gameWinner = null;
+            player1Score = 0;
+            player2Score = 0;
+            updateScore();
+            resetPuck();
+            drawField();
+            drawPaddle(paddle1);
+            drawPaddle(paddle2);
+            drawPuck();
+        }
+
+        function toggleDifficulty() {
+            const btn = document.getElementById('difficultyBtn');
+            
+            if (aiDifficulty === 'easy') {
+                aiDifficulty = 'medium';
+                aiReactionTime = 0.7;
+                aiMaxSpeed = 3.5;
+                aiPredictionDepth = 30;
+                btn.textContent = 'Difficulty: Medium';
+            } else if (aiDifficulty === 'medium') {
+                aiDifficulty = 'hard';
+                aiReactionTime = 0.9;
+                aiMaxSpeed = 4.5;
+                aiPredictionDepth = 50;
+                btn.textContent = 'Difficulty: Hard';
+            } else {
+                aiDifficulty = 'easy';
+                aiReactionTime = 0.5;
+                aiMaxSpeed = 2.5;
+                aiPredictionDepth = 15;
+                btn.textContent = 'Difficulty: Easy';
+            }
+        }
+        
+        resetGame();
+    </script>
+</body>
+</html>

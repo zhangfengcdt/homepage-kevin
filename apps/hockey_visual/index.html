@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Hockey Rink Grid Visualization</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏒</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: fit-content;
+        }
+        h1 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4299e1;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #3182ce;
+        }
+        #rinkGridContainer {
+            margin-top: 20px;
+            display: grid;
+            border: 2px solid #333;
+            background-color: #e0f2f7;
+            padding: 5px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            overflow-x: auto;
+            font-size: 0.75rem;
+        }
+        .grid-cell {
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: bold;
+            font-size: 10px;
+            line-height: 1;
+            color: #333;
+            border: 0.5px dotted rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .team-a-player { background-color: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; }
+        .team-b-player { background-color: #3b82f6; color: white; border-radius: 50%; width: 20px; height: 20px; }
+        .goalie { background-color: #facc15; color: #333; border-radius: 50%; width: 22px; height: 22px; }
+        .puck { background-color: #000; border-radius: 50%; width: 10px; height: 10px; }
+        .goal { background-color: #f8fafc; color: #666; font-size: 0.6rem; }
+        .rink-line { background-color: #a0aec0; }
+        .legend {
+            margin-top: 30px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f7fafc;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend-color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .legend-color-box.square {
+            border-radius: 5px;
+        }
+        .legend-color-box.puck-legend {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-text {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        .movement-arrow {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .grid-container {
+            position: relative;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .code-editor {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 16px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 2px solid #404040;
+            border-radius: 8px;
+            resize: none;
+            width: 100%;
+            height: 400px;
+            white-space: pre;
+            overflow-wrap: normal;
+            word-break: keep-all;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            font-variant-ligatures: normal;
+            font-feature-settings: normal;
+        }
+        .code-editor:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.3);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="flex items-center justify-center mb-4">
+        <img src="kevin_logo.png" alt="Kevin's Logo" class="h-12 w-auto mr-4">
+        <h1 class="mb-0">🏒 Ice Hockey Rink Strategy Visualizer</h1>
+    </div>
+    <p class="text-gray-600 mb-6">Enter the start and end position maps below and click "Generate" to display player movements.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-700">Start Positions</h3>
+                <button id="pasteStartBtn" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                    Paste
+                </button>
+            </div>
+            <textarea id="startGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  >  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  A1 .  .  .  B1 .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
+| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  .  .  .  .  .  BG G |
+| G  .  .  .  .  .  .  .  .  .  .  >  .  .  .  .  .  .  .  .  .  G |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  A3 .  .  .  B3 .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  A5 .  .  .  .  .  .  .  .  .  .  .  B5 .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
++------------------------------------------------------------------+</textarea>
+        </div>
+        <div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold text-gray-700">End Positions</h3>
+                <button id="pasteEndBtn" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                    Paste
+                </button>
+            </div>
+            <textarea id="endGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  >  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  A1 .  .  .  B1 .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
+| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  .  .  .  .  .  BG G |
+| G  .  .  .  .  .  .  .  .  .  .  >  .  .  .  .  .  .  .  .  .  G |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  A3 .  .  .  B3 .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  A5 .  .  .  .  .  .  .  .  .  .  .  B5 .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
+| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
++------------------------------------------------------------------+</textarea>
+        </div>
+    </div>
+
+    <button id="generateGridBtn">Generate Movement Visualization</button>
+    <div id="rinkGridContainer"></div>
+
+    <div class="legend">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">Legend:</h2>
+        <div class="legend-item">
+            <div class="legend-color-box team-a-player"></div>
+            <span class="legend-text">Team A Players (Red circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box team-b-player"></div>
+            <span class="legend-text">Team B Players (Blue circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box goalie"></div>
+            <span class="legend-text">Goalies (Yellow circles)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box puck puck-legend"></div>
+            <span class="legend-text">Hockey Puck (Small Black circle)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #f8fafc; border: 1px solid #cbd5e0;"></div>
+            <span class="legend-text">Goal (Light Gray/White squares)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #a0aec0; border-radius: 5px;"></div>
+            <span class="legend-text">Rink Line Marker (Gray square for '>')</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color-box square" style="background-color: #e0f2f7; border: 1px dashed #cbd5e0;"></div>
+            <span class="legend-text">Empty Rink Space (Light Blue/Ice color)</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const generateGridBtn = document.getElementById('generateGridBtn');
+        const rinkGridContainer = document.getElementById('rinkGridContainer');
+        const startGridInput = document.getElementById('startGridInput');
+        const endGridInput = document.getElementById('endGridInput');
+        const pasteStartBtn = document.getElementById('pasteStartBtn');
+        const pasteEndBtn = document.getElementById('pasteEndBtn');
+
+        generateGridBtn.addEventListener('click', renderMovementVisualization);
+        
+        // Add paste functionality
+        pasteStartBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                startGridInput.value = text;
+                renderMovementVisualization();
+            } catch (err) {
+                alert('Failed to paste from clipboard. Please make sure you have given clipboard permissions.');
+            }
+        });
+        
+        pasteEndBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                endGridInput.value = text;
+                renderMovementVisualization();
+            } catch (err) {
+                alert('Failed to paste from clipboard. Please make sure you have given clipboard permissions.');
+            }
+        });
+        
+        // Automatically render the grid when page loads
+        renderMovementVisualization();
+
+        function parseGridString(gridString) {
+            const lines = gridString.split('\n').map(line => line.trim()).filter(line => line.length > 0 && !line.startsWith('+'));
+            const parsedGrid = [];
+
+            for (const line of lines) {
+                const row = [];
+                const content = line.substring(1, line.length - 1).trim();
+                const cells = content.match(/(\S+\s*|\s+)/g);
+                if (cells) {
+                    for (const cell of cells) {
+                        const trimmedCell = cell.trim();
+                        if (trimmedCell !== '') {
+                            row.push(trimmedCell);
+                        } else if (cell.length >= 2 && trimmedCell === '') {
+                            row.push('.');
+                        }
+                    }
+                }
+                if (row.length > 0) {
+                    parsedGrid.push(row);
+                }
+            }
+            return parsedGrid;
+        }
+
+        function renderMovementVisualization() {
+            const startGridString = startGridInput.value.trim();
+            const endGridString = endGridInput.value.trim();
+            const startGrid = parseGridString(startGridString);
+            const endGrid = parseGridString(endGridString);
+            
+            rinkGridContainer.innerHTML = '';
+
+            if (startGrid.length === 0 || endGrid.length === 0) {
+                rinkGridContainer.textContent = 'Failed to parse grid data.';
+                return;
+            }
+
+            // Create movement visualization only
+            const movementContainer = document.createElement('div');
+            movementContainer.className = 'text-center';
+            
+            const movementTitle = document.createElement('h3');
+            movementTitle.className = 'text-lg font-semibold mb-4 text-gray-700';
+            movementTitle.textContent = 'Player Movements';
+            movementContainer.appendChild(movementTitle);
+            
+            const movementGridContainer = document.createElement('div');
+            movementGridContainer.style.display = 'grid';
+            movementGridContainer.style.gridTemplateColumns = `repeat(${startGrid[0].length}, 1fr)`;
+            movementGridContainer.className = 'border-2 border-gray-700 bg-gray-100 p-2 rounded-lg shadow-lg inline-block grid-container';
+            renderMovementGrid(startGrid, endGrid, movementGridContainer);
+            movementContainer.appendChild(movementGridContainer);
+            
+            rinkGridContainer.appendChild(movementContainer);
+        }
+        
+        function renderGrid(grid, container) {
+            grid.forEach(row => {
+                row.forEach(cellContent => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+
+                    if (cellContent.match(/^A[1-5]$/)) {
+                        cell.classList.add('team-a-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent.match(/^B[1-5]$/)) {
+                        cell.classList.add('team-b-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'AG' || cellContent === 'BG') {
+                        cell.classList.add('goalie');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'P') {
+                        cell.classList.add('puck');
+                    } else if (cellContent === 'G') {
+                        cell.classList.add('goal');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === '>') {
+                        cell.classList.add('rink-line');
+                        cell.textContent = cellContent;
+                    } else {
+                        cell.textContent = cellContent === '.' ? '' : cellContent;
+                    }
+                    container.appendChild(cell);
+                });
+            });
+        }
+        
+        function renderMovementGrid(startGrid, endGrid, container) {
+            const playerMovements = findPlayerMovements(startGrid, endGrid);
+            
+            // Render the basic grid first (showing start positions)
+            startGrid.forEach((row, rowIndex) => {
+                row.forEach((cellContent, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+                    cell.setAttribute('data-row', rowIndex);
+                    cell.setAttribute('data-col', colIndex);
+
+                    if (cellContent.match(/^A[1-5]$/)) {
+                        cell.classList.add('team-a-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent.match(/^B[1-5]$/)) {
+                        cell.classList.add('team-b-player');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'AG' || cellContent === 'BG') {
+                        cell.classList.add('goalie');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === 'P') {
+                        cell.classList.add('puck');
+                    } else if (cellContent === 'G') {
+                        cell.classList.add('goal');
+                        cell.textContent = cellContent;
+                    } else if (cellContent === '>') {
+                        cell.classList.add('rink-line');
+                        cell.textContent = cellContent;
+                    } else {
+                        cell.textContent = cellContent === '.' ? '' : cellContent;
+                    }
+                    container.appendChild(cell);
+                });
+            });
+            
+            // Add movement arrows after grid is rendered
+            setTimeout(() => {
+                playerMovements.forEach(movement => {
+                    if (movement.startRow !== movement.endRow || movement.startCol !== movement.endCol) {
+                        const startCell = container.querySelector(`[data-row="${movement.startRow}"][data-col="${movement.startCol}"]`);
+                        const endCell = container.querySelector(`[data-row="${movement.endRow}"][data-col="${movement.endCol}"]`);
+                        
+                        if (startCell && endCell) {
+                            const startRect = startCell.getBoundingClientRect();
+                            const endRect = endCell.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+                            
+                            // Calculate centers relative to container
+                            const startX = startRect.left - containerRect.left + startRect.width / 2;
+                            const startY = startRect.top - containerRect.top + startRect.height / 2;
+                            const endX = endRect.left - containerRect.left + endRect.width / 2;
+                            const endY = endRect.top - containerRect.top + endRect.height / 2;
+                            
+                            // Calculate arrow properties
+                            const deltaX = endX - startX;
+                            const deltaY = endY - startY;
+                            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                            
+                            const arrow = document.createElement('div');
+                            arrow.className = 'movement-arrow';
+                            arrow.style.position = 'absolute';
+                            arrow.style.left = `${startX}px`;
+                            arrow.style.top = `${startY}px`;
+                            arrow.style.width = `${distance}px`;
+                            arrow.style.height = '3px';
+                            arrow.style.backgroundColor = movement.player.match(/^A/) ? '#ef4444' : '#3b82f6';
+                            arrow.style.transformOrigin = '0 50%';
+                            arrow.style.transform = `rotate(${angle}deg)`;
+                            arrow.style.pointerEvents = 'none';
+                            arrow.style.zIndex = '10';
+                            
+                            // Add arrowhead
+                            const arrowhead = document.createElement('div');
+                            arrowhead.style.position = 'absolute';
+                            arrowhead.style.right = '-8px';
+                            arrowhead.style.top = '-5px';
+                            arrowhead.style.width = '0';
+                            arrowhead.style.height = '0';
+                            arrowhead.style.borderLeft = `8px solid ${movement.player.match(/^A/) ? '#ef4444' : '#3b82f6'}`;
+                            arrowhead.style.borderTop = '5px solid transparent';
+                            arrowhead.style.borderBottom = '5px solid transparent';
+                            
+                            arrow.appendChild(arrowhead);
+                            container.appendChild(arrow);
+                        }
+                    }
+                });
+            }, 50);
+        }
+        
+        function findPlayerMovements(startGrid, endGrid) {
+            const movements = [];
+            const startPositions = {};
+            const endPositions = {};
+            
+            // Find all player positions in start grid
+            startGrid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.match(/^[AB][1-5G]$/) || cell === 'P') {
+                        startPositions[cell] = { row: rowIndex, col: colIndex };
+                    }
+                });
+            });
+            
+            // Find all player positions in end grid
+            endGrid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    if (cell.match(/^[AB][1-5G]$/) || cell === 'P') {
+                        endPositions[cell] = { row: rowIndex, col: colIndex };
+                    }
+                });
+            });
+            
+            // Calculate movements
+            Object.keys(startPositions).forEach(player => {
+                if (endPositions[player]) {
+                    movements.push({
+                        player: player,
+                        startRow: startPositions[player].row,
+                        startCol: startPositions[player].col,
+                        endRow: endPositions[player].row,
+                        endCol: endPositions[player].col
+                    });
+                }
+            });
+            
+            return movements;
+        }
+    });
+</script>
+</body>
+</html>
