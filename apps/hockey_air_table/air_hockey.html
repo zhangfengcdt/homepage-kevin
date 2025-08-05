@@ -122,7 +122,7 @@
 
     <div id="instructions">
         <p>Control your paddle (red) with mouse or touch</p>
-        <p>AI controls the green paddle</p>
+        <p>AI controls the blue paddle</p>
         <p>First to 5 goals wins!</p>
     </div>
 
@@ -188,7 +188,7 @@
             x: canvas.width - 100,
             y: canvas.height / 2,
             radius: 30,
-            color: '#44ff44'
+            color: '#0000ff' // Changed to blue
         };
 
         const keys = {};
@@ -476,14 +476,14 @@
             
             if (aiDifficulty === 'easy') {
                 aiDifficulty = 'medium';
-                aiReactionTime = 0.7;
-                aiMaxSpeed = 3.5;
+                aiReactionTime = 1;
+                aiMaxSpeed = 4;
                 aiPredictionDepth = 30;
                 btn.textContent = 'Difficulty: Medium';
             } else if (aiDifficulty === 'medium') {
                 aiDifficulty = 'hard';
-                aiReactionTime = 0.9;
-                aiMaxSpeed = 4.5;
+                aiReactionTime = 3;
+                aiMaxSpeed = 5;
                 aiPredictionDepth = 50;
                 btn.textContent = 'Difficulty: Hard';
             } else {
