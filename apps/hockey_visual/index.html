@@ -3,166 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ice Hockey Rink Grid Visualization</title>
+    <title>Hockey Play Animator - Draw Your Moves!</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏒</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            text-align: center;
-            width: 100%;
-            max-width: fit-content;
-        }
-        h1 {
-            font-size: 2.25rem;
-            font-weight: bold;
-            color: #1a202c;
-            margin-bottom: 20px;
-        }
-        button {
-            background-color: #4299e1;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        button:hover {
-            background-color: #3182ce;
-        }
-        #rinkGridContainer {
-            margin-top: 20px;
-            display: grid;
-            border: 2px solid #333;
-            background-color: #e0f2f7;
-            padding: 5px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            max-width: 100%;
-            overflow-x: auto;
-            font-size: 0.75rem;
-        }
-        .grid-cell {
-            width: 25px;
-            height: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-weight: bold;
-            font-size: 10px;
-            line-height: 1;
-            color: #333;
-            border: 0.5px dotted rgba(0,0,0,0.1);
-            box-sizing: border-box;
-        }
-        .team-a-player { background-color: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; }
-        .team-b-player { background-color: #3b82f6; color: white; border-radius: 50%; width: 20px; height: 20px; }
-        .goalie { background-color: #facc15; color: #333; border-radius: 50%; width: 22px; height: 22px; }
-        .puck { background-color: #000; border-radius: 50%; width: 10px; height: 10px; }
-        .goal { background-color: #f8fafc; color: #666; font-size: 0.6rem; }
-        .rink-line { background-color: #a0aec0; }
-        .legend {
-            margin-top: 30px;
-            text-align: left;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            background-color: #f7fafc;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .legend-color-box {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        .legend-color-box.square {
-            border-radius: 5px;
-        }
-        .legend-color-box.puck-legend {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .legend-text {
-            color: #4a5568;
-            font-size: 0.9rem;
-        }
-        .movement-arrow {
-            position: absolute;
-            pointer-events: none;
-            z-index: 10;
-        }
-        .grid-container {
-            position: relative;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .code-editor {
-            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            padding: 16px;
-            background-color: #1e1e1e;
-            color: #d4d4d4;
-            border: 2px solid #404040;
-            border-radius: 8px;
-            resize: none;
-            width: 100%;
-            height: 400px;
-            white-space: pre;
-            overflow-wrap: normal;
-            word-break: keep-all;
-            tab-size: 4;
-            -moz-tab-size: 4;
-            font-variant-ligatures: normal;
-            font-feature-settings: normal;
-        }
-        .code-editor:focus {
-            outline: none;
-            border-color: #007acc;
-            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
+
 <body>
 <div class="container">
     <div class="flex items-center justify-center mb-4">
         <img src="kevin_logo.png" alt="Kevin's Logo" class="h-12 w-auto mr-4">
-        <h1 class="mb-0">🏒 Ice Hockey Rink Strategy Visualizer</h1>
+        <h1 class="mb-0">🏒 Hockey Play Animator - Draw Epic Moves!</h1>
     </div>
-    <p class="text-gray-600 mb-6">Enter the start and end position maps below and click "Generate" to display player movements.</p>
+    <p class="text-gray-600 mb-6">Create awesome hockey plays with AI! Just describe your strategy and watch the magic happen ✨</p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <!-- Strategy Input Section -->
+    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h3 class="text-lg font-semibold text-gray-700 mb-3">🤖 AI Play Maker</h3>
+        
+        <!-- API Key Toggle -->
+        <div class="mb-3">
+            <button id="toggleApiKeySection" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                <svg id="apiKeyToggleIcon" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span id="apiKeyToggleText">Show API Key Settings</span>
+            </button>
+        </div>
+        
+        <!-- API Key Input -->
+        <div id="apiKeySection" class="mb-4 hidden">
+            <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key:</label>
+            <div class="flex gap-2">
+                <input 
+                    type="password" 
+                    id="apiKeyInput" 
+                    placeholder="sk-..."
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                />
+                <button 
+                    id="toggleApiKeyBtn" 
+                    class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    title="Show/Hide API Key"
+                >
+                    <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Your API key is stored locally and never sent to our servers. Get one from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline">OpenAI</a>.</p>
+        </div>
+        
+        <!-- Strategy Input -->
+        <p class="text-sm text-gray-600 mb-3">Tell the AI what play you want to run and it'll draw it for you! 🎮</p>
+        <div class="flex gap-3">
+            <input 
+                type="text" 
+                id="strategyInput" 
+                placeholder="e.g., Execute a power play formation with emphasis on quick puck movement"
+                value="Can you show a strategy that the A team moving right after the initial positions?"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button 
+                id="generateStrategyBtn" 
+                class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Generate with AI (kevin)
+            </button>
+        </div>
+        <div id="aiStatus" class="mt-3 text-sm text-gray-600 hidden"></div>
+    </div>
+
+    <!-- Toggle for showing/hiding position maps -->
+    <div class="mb-4 flex items-center justify-between">
+        <button id="toggleMapsBtn" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+            <svg id="toggleIcon" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            <span id="toggleText">Show Position Maps</span>
+        </button>
+        <span class="text-sm text-gray-500">View/edit the text-based position maps</span>
+    </div>
+
+    <div id="positionMapsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
         <div>
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-700">Start Positions</h3>
@@ -170,23 +98,7 @@
                     Paste
                 </button>
             </div>
-            <textarea id="startGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  >  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  A1 .  .  .  B1 .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
-| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  .  .  .  .  .  BG G |
-| G  .  .  .  .  .  .  .  .  .  .  >  .  .  .  .  .  .  .  .  .  G |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  A3 .  .  .  B3 .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  A5 .  .  .  .  .  .  .  .  .  .  .  B5 .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-+------------------------------------------------------------------+</textarea>
+            <textarea id="startGridInput" class="code-editor" spellcheck="false"></textarea>
         </div>
         <div>
             <div class="flex justify-between items-center mb-2">
@@ -195,23 +107,7 @@
                     Paste
                 </button>
             </div>
-            <textarea id="endGridInput" class="code-editor" spellcheck="false">+------------------------------------------------------------------+
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  >  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  A1 .  .  .  B1 .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G |
-| G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  .  .  .  .  .  BG G |
-| G  .  .  .  .  .  .  .  .  .  .  >  .  .  .  .  .  .  .  .  .  G |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  A3 .  .  .  B3 .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  A5 .  .  .  .  .  .  .  .  .  .  .  B5 .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-| .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . |
-+------------------------------------------------------------------+</textarea>
+            <textarea id="endGridInput" class="code-editor" spellcheck="false"></textarea>
         </div>
     </div>
 
@@ -249,6 +145,12 @@
             <span class="legend-text">Empty Rink Space (Light Blue/Ice color)</span>
         </div>
     </div>
+    
+    <!-- Generated Strategy Analysis (moved to bottom) -->
+    <div id="strategyDetails" class="mt-6 p-4 bg-white rounded-lg border border-gray-200 hidden">
+        <h4 class="text-lg font-semibold text-gray-700 mb-3">Generated Strategy Analysis:</h4>
+        <div id="strategyContent" class="text-sm text-gray-600 space-y-3"></div>
+    </div>
 </div>
 
 <script>
@@ -259,8 +161,84 @@
         const endGridInput = document.getElementById('endGridInput');
         const pasteStartBtn = document.getElementById('pasteStartBtn');
         const pasteEndBtn = document.getElementById('pasteEndBtn');
+        const generateStrategyBtn = document.getElementById('generateStrategyBtn');
+        const strategyInput = document.getElementById('strategyInput');
+        const aiStatus = document.getElementById('aiStatus');
+        const strategyDetails = document.getElementById('strategyDetails');
+        const strategyContent = document.getElementById('strategyContent');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+        const toggleMapsBtn = document.getElementById('toggleMapsBtn');
+        const positionMapsContainer = document.getElementById('positionMapsContainer');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const toggleText = document.getElementById('toggleText');
+        const toggleApiKeySection = document.getElementById('toggleApiKeySection');
+        const apiKeySection = document.getElementById('apiKeySection');
+        const apiKeyToggleIcon = document.getElementById('apiKeyToggleIcon');
+        const apiKeyToggleText = document.getElementById('apiKeyToggleText');
 
         generateGridBtn.addEventListener('click', renderMovementVisualization);
+        generateStrategyBtn.addEventListener('click', generateStrategyWithAI);
+        
+        // Toggle API key section visibility
+        toggleApiKeySection.addEventListener('click', () => {
+            const isHidden = apiKeySection.classList.contains('hidden');
+            
+            if (isHidden) {
+                apiKeySection.classList.remove('hidden');
+                apiKeyToggleIcon.classList.add('rotate-90');
+                apiKeyToggleText.textContent = 'Hide API Key Settings';
+            } else {
+                apiKeySection.classList.add('hidden');
+                apiKeyToggleIcon.classList.remove('rotate-90');
+                apiKeyToggleText.textContent = 'Show API Key Settings';
+            }
+        });
+        
+        // Toggle position maps visibility
+        toggleMapsBtn.addEventListener('click', () => {
+            const isHidden = positionMapsContainer.classList.contains('hidden');
+            
+            if (isHidden) {
+                positionMapsContainer.classList.remove('hidden');
+                toggleIcon.classList.add('rotate-90');
+                toggleText.textContent = 'Hide Position Maps';
+            } else {
+                positionMapsContainer.classList.add('hidden');
+                toggleIcon.classList.remove('rotate-90');
+                toggleText.textContent = 'Show Position Maps';
+            }
+        });
+        
+        // Toggle API key visibility
+        toggleApiKeyBtn.addEventListener('click', () => {
+            const isPassword = apiKeyInput.type === 'password';
+            apiKeyInput.type = isPassword ? 'text' : 'password';
+            
+            // Update eye icon
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (isPassword) {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                `;
+            } else {
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        });
+        
+        // Load API key from localStorage if available
+        const savedApiKey = localStorage.getItem('openai_api_key');
+        if (savedApiKey) {
+            apiKeyInput.value = savedApiKey;
+        }
+        
+        // Save API key to localStorage when it changes
+        apiKeyInput.addEventListener('change', () => {
+            localStorage.setItem('openai_api_key', apiKeyInput.value);
+        });
         
         // Add paste functionality
         pasteStartBtn.addEventListener('click', async () => {
@@ -283,8 +261,363 @@
             }
         });
         
-        // Automatically render the grid when page loads
-        renderMovementVisualization();
+        // Don't automatically render on page load since textareas are empty by default
+        // renderMovementVisualization();
+
+        async function generateStrategyWithAI() {
+            console.log('Starting generateStrategyWithAI...');
+            
+            const strategy = strategyInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+            
+            console.log('Strategy:', strategy);
+            console.log('API Key length:', apiKey.length);
+            
+            if (!strategy) {
+                alert('Please enter a strategy description');
+                return;
+            }
+            
+            if (!apiKey) {
+                alert('Please enter your OpenAI API key');
+                apiKeyInput.focus();
+                return;
+            }
+
+            // Show loading status with fancy animation
+            aiStatus.classList.remove('hidden');
+            aiStatus.innerHTML = `
+                <div class="ai-loading">
+                    <span class="ai-brain">🧠</span>
+                    <span>AI is analyzing your strategy</span>
+                    <div class="ai-loading-dots">
+                        <div class="ai-loading-dot"></div>
+                        <div class="ai-loading-dot"></div>
+                        <div class="ai-loading-dot"></div>
+                    </div>
+                </div>
+                <div class="ai-progress-bar">
+                    <div class="ai-progress-fill"></div>
+                </div>
+            `;
+            generateStrategyBtn.disabled = true;
+            strategyDetails.classList.add('hidden');
+            
+            console.log('UI updated, preparing API call...');
+
+            const systemPrompt = `You are a professional ice hockey coach who is skilled in planning game strategies and mapping them on the whiteboard. 
+
+The user will propose a specific hockey player strategy and describe key points of that strategy. 
+
+Please create a strategy map by following the following steps:
+
+- Begin by clarifying the purpose, core objectives, and overall vision for the game. 
+- Analyze both teams' strong and weak points.
+- Use your knowledge and experience in playing and coaching ice hockey to pick a good strategy.
+- Describe how each player on your team would implement the strategy, including their current positions and the positions they need to move to. 
+- Predict the opponent's current and future positions.
+- Draw the start and end position maps on the board using the following format of mapping the ice rinks. 
+
+Output format:
+
+Should be TEXT format, including the following paragraphs on one level:
+- Purpose: TEXT
+- CoreObjectives: TEXT
+- Vision: TEXT
+- TeamAnalysis: TEXT
+- StrategyChoice: LIST of TEXT
+- OpponentReactions: LIST of TEXT
+- Player Implementation: LIST of TEXT
+- start: TEXT (using the following position 2D map based on text art format)
+- end: TEXT (using the following position 2D map based on text art format)
+
+start position:
++----------------------------------------------------------------------+
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  >  .  A4 .  .  .  .  .  .  .  .  .  .  .  B4 .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  A1 .  .  .  B1 .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  G  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  G . |
+|.  G  AG .  .  .  .  .  .  .  . A2  P  B2 .  .  .  .  .  .  .  BG G . |
+|.  G  .  .  .  .  .  .  .  .  .  .  >  .  .  .  .  .  .  .  .  .  G . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  A3 .  .  .  B3 .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  A5 .  .  .  .  .  .  .  .  .  .  .  B5 .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
+|.  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . |
++----------------------------------------------------------------------+
+
+Explanation of Symbols:
+  A1-A5: Attacking team players (A4, A5 are defense men)
+  B1-B5: Defending team players
+  G : Goal
+  AG: Attacking Goalie
+  BG: Defending Goalie
+  P : Puck
+  . : Empty ice
+  +, -, |: Rink boundary
+  >: referee
+
+Rules:
+- each strategy should output two and only two position maps (start and end) as the above format;
+- you need to move the puck as well for each strategy.
+- The position should have all grid points' status:
+- each map should have the same number of x and y cells, and they should be aligned.
+- the end position map should be different than the start position map (at least one player should move).
+- both teams should move!!!
+
+`;
+
+            try {
+                console.log('Preparing API request...');
+                
+                const requestBody = {
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: strategy }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 4000
+                };
+                
+                console.log('Request body:', JSON.stringify(requestBody, null, 2));
+                console.log('Making API call to OpenAI...');
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('API call completed, status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('API Error:', errorData);
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                console.log('Parsing response JSON...');
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    throw new Error('Invalid response structure from OpenAI');
+                }
+                
+                const aiResponse = data.choices[0].message.content;
+                console.log('AI Response:', aiResponse); // Debug log
+
+                // Parse the AI response - look for the grid patterns more flexibly
+                console.log('Looking for start/end patterns...');
+                
+                // Find all grid patterns in the response
+                const gridPattern = /\+[-\s]+\+[\s\S]*?\+[-\s]+\+/g;
+                const allGrids = aiResponse.match(gridPattern);
+                console.log('Found', allGrids ? allGrids.length : 0, 'grid patterns');
+                
+                // Log each grid found for debugging
+                if (allGrids) {
+                    allGrids.forEach((grid, index) => {
+                        console.log(`Grid ${index + 1} first line:`, grid.split('\n')[0]);
+                        console.log(`Grid ${index + 1} position in response:`, aiResponse.indexOf(grid));
+                    });
+                }
+                
+                let startGrid = null;
+                let endGrid = null;
+                
+                // Method 1: Split by common separators between start and end
+                const separatorPatterns = [
+                    /\nend\s*(?:positions?)?:?\s*\n/i,
+                    /\n\s*end\s+/i,
+                    /\nend:/i,
+                    /\n\n.*?end.*?\n/i
+                ];
+                
+                let splitIndex = -1;
+                let separatorFound = null;
+                
+                for (const pattern of separatorPatterns) {
+                    const match = aiResponse.match(pattern);
+                    if (match) {
+                        splitIndex = aiResponse.indexOf(match[0]);
+                        separatorFound = match[0];
+                        console.log('Found separator:', separatorFound.replace(/\n/g, '\\n'));
+                        break;
+                    }
+                }
+                
+                if (splitIndex > 0 && allGrids && allGrids.length >= 2) {
+                    // Find grids before and after the separator
+                    for (const grid of allGrids) {
+                        const gridIndex = aiResponse.indexOf(grid);
+                        if (gridIndex < splitIndex && !startGrid) {
+                            startGrid = grid;
+                            console.log('Found start grid before separator at index:', gridIndex);
+                        } else if (gridIndex > splitIndex && !endGrid) {
+                            endGrid = grid;
+                            console.log('Found end grid after separator at index:', gridIndex);
+                        }
+                    }
+                }
+                
+                // Method 2: If we have exactly 2 grids and they're different, use them
+                if ((!startGrid || !endGrid) && allGrids && allGrids.length === 2) {
+                    if (allGrids[0] !== allGrids[1]) {
+                        console.log('Using simple method - exactly 2 different grids found');
+                        startGrid = allGrids[0];
+                        endGrid = allGrids[1];
+                    }
+                }
+                
+                // Method 3: Look for the word "start" before first grid and "end" before second grid
+                if ((!startGrid || !endGrid) && allGrids && allGrids.length >= 2) {
+                    const beforeFirst = aiResponse.substring(0, aiResponse.indexOf(allGrids[0]));
+                    const beforeSecond = aiResponse.substring(aiResponse.indexOf(allGrids[0]) + allGrids[0].length, 
+                                                             aiResponse.indexOf(allGrids[allGrids.length - 1]));
+                    
+                    if (beforeFirst.toLowerCase().includes('start') && beforeSecond.toLowerCase().includes('end')) {
+                        console.log('Using keyword detection method');
+                        startGrid = allGrids[0];
+                        endGrid = allGrids[allGrids.length - 1];
+                    }
+                }
+                
+                // Method 4: Last resort - use first and last grid if they're different
+                if ((!startGrid || !endGrid) && allGrids && allGrids.length >= 2) {
+                    const firstGrid = allGrids[0];
+                    const lastGrid = allGrids[allGrids.length - 1];
+                    
+                    if (firstGrid !== lastGrid) {
+                        console.log('Using last resort method - first and last grids are different');
+                        startGrid = firstGrid;
+                        endGrid = lastGrid;
+                    } else {
+                        console.error('ERROR: All grids found are identical!');
+                        // Try to find if there's a different grid in the middle
+                        for (let i = 1; i < allGrids.length - 1; i++) {
+                            if (allGrids[i] !== firstGrid) {
+                                console.log('Found different grid at position', i + 1);
+                                endGrid = allGrids[i];
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                console.log('Start grid found:', !!startGrid);
+                console.log('End grid found:', !!endGrid);
+                console.log('Start grid preview:', startGrid ? startGrid.substring(0, 100) + '...' : 'null');
+                console.log('End grid preview:', endGrid ? endGrid.substring(0, 100) + '...' : 'null');
+
+                if (startGrid && endGrid) {
+                    // Check if grids are identical
+                    if (startGrid === endGrid) {
+                        console.warn('WARNING: Start and end grids are identical!');
+                        console.log('Full AI Response to debug:', aiResponse);
+                        
+                        // Try one more time to find different grids
+                        if (allGrids && allGrids.length > 1) {
+                            console.log('Attempting to find different grids in the response...');
+                            for (let i = 0; i < allGrids.length; i++) {
+                                for (let j = i + 1; j < allGrids.length; j++) {
+                                    if (allGrids[i] !== allGrids[j]) {
+                                        console.log(`Found different grids at positions ${i+1} and ${j+1}`);
+                                        startGrid = allGrids[i];
+                                        endGrid = allGrids[j];
+                                        break;
+                                    }
+                                }
+                                if (startGrid !== endGrid) break;
+                            }
+                        }
+                    }
+                    
+                    // Visual comparison
+                    console.log('=== GRID COMPARISON ===');
+                    console.log('Grids are identical?', startGrid === endGrid);
+                    if (startGrid !== endGrid) {
+                        const startLines = startGrid.split('\n');
+                        const endLines = endGrid.split('\n');
+                        let differences = 0;
+                        for (let i = 0; i < Math.min(startLines.length, endLines.length); i++) {
+                            if (startLines[i] !== endLines[i]) {
+                                differences++;
+                                console.log(`Line ${i+1} differs:`);
+                                console.log('  Start:', startLines[i]);
+                                console.log('  End:  ', endLines[i]);
+                            }
+                        }
+                        console.log(`Total differences: ${differences} lines`);
+                    }
+
+                    // Update the input fields
+                    startGridInput.value = startGrid;
+                    endGridInput.value = endGrid;
+
+                    // Show strategy details
+                    strategyContent.innerHTML = '';
+                    
+                    // Parse and display strategy analysis
+                    const sections = [
+                        { key: 'Purpose', label: 'Purpose' },
+                        { key: 'CoreObjectives', label: 'Core Objectives' },
+                        { key: 'Vision', label: 'Vision' },
+                        { key: 'TeamAnalysis', label: 'Team Analysis' },
+                        { key: 'StrategyChoice', label: 'Strategy Choice' },
+                        { key: 'OpponentReactions', label: 'Opponent Reactions' },
+                        { key: 'Player Implementation', label: 'Player Implementation' }
+                    ];
+
+                    sections.forEach(section => {
+                        const regex = new RegExp(`${section.key}:\\s*([\\s\\S]*?)(?=\\w+:|start:|$)`, 'i');
+                        const match = aiResponse.match(regex);
+                        if (match) {
+                            const div = document.createElement('div');
+                            div.innerHTML = `<strong>${section.label}:</strong> ${match[1].trim()}`;
+                            strategyContent.appendChild(div);
+                        }
+                    });
+
+                    strategyDetails.classList.remove('hidden');
+
+                    // Automatically render the visualization
+                    renderMovementVisualization();
+
+                    aiStatus.innerHTML = '✅ Strategy generated successfully!';
+                } else {
+                    console.error('Failed to parse grids from AI response');
+                    throw new Error('Could not parse AI response - no valid grid patterns found');
+                }
+            } catch (error) {
+                console.error('Caught error:', error);
+                console.error('Error stack:', error.stack);
+                
+                // More detailed error messages
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    aiStatus.innerHTML = '❌ Network error. Check your internet connection and try again.';
+                } else if (error.message.includes('API request failed')) {
+                    aiStatus.innerHTML = '❌ API request failed. Please check your API key and ensure it has access to the model.';
+                } else if (error.message.includes('parse')) {
+                    aiStatus.innerHTML = '❌ Could not parse AI response. The AI may not have returned the grids in the expected format.';
+                } else if (error.message.includes('Invalid response structure')) {
+                    aiStatus.innerHTML = '❌ Invalid response from OpenAI. Please check your API key.';
+                } else {
+                    aiStatus.innerHTML = `❌ Error: ${error.message}`;
+                }
+            } finally {
+                console.log('Cleaning up...');
+                generateStrategyBtn.disabled = false;
+            }
+        }
 
         function parseGridString(gridString) {
             const lines = gridString.split('\n').map(line => line.trim()).filter(line => line.length > 0 && !line.startsWith('+'));
@@ -314,13 +647,20 @@
         function renderMovementVisualization() {
             const startGridString = startGridInput.value.trim();
             const endGridString = endGridInput.value.trim();
+            
+            // Clear the container
+            rinkGridContainer.innerHTML = '';
+            
+            // Don't show error if inputs are empty
+            if (!startGridString || !endGridString) {
+                return;
+            }
+            
             const startGrid = parseGridString(startGridString);
             const endGrid = parseGridString(endGridString);
-            
-            rinkGridContainer.innerHTML = '';
 
             if (startGrid.length === 0 || endGrid.length === 0) {
-                rinkGridContainer.textContent = 'Failed to parse grid data.';
+                rinkGridContainer.textContent = 'Failed to parse grid data. Please check the format of your position maps.';
                 return;
             }
 
